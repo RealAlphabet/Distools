@@ -1,0 +1,36 @@
+{
+  "name": "distools",
+  "version": "0.4.0",
+  "description": "Light and powerful utility to enhance your Discord experience.",
+  "main": "src/index.js",
+  "scripts": {
+    "dist": "rollup -c",
+    "watch": "rollup -c --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OnceDot/Distools.git"
+  },
+  "keywords": [
+    "discord",
+    "lumz",
+    "utility"
+  ],
+  "author": "OnceDot",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/OnceDot/Distools/issues"
+  },
+  "homepage": "https://github.com/OnceDot/Distools#readme",
+  "devDependencies": {
+    "@babel/core": "^7.11.1",
+    "@babel/plugin-syntax-jsx": "^7.10.4",
+    "@babel/plugin-transform-react-jsx": "^7.10.4",
+    "@babel/preset-react": "^7.10.4",
+    "@rollup/plugin-babel": "^5.1.0",
+    "babel-plugin-inline-import": "^3.0.0",
+    "babel-plugin-root-import": "^6.5.0",
+    "rollup": "^2.23.1",
+    "rollup-plugin-terser": "^6.1.0"
+  }
+}
