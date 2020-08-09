@@ -26,20 +26,20 @@
 ![Screenshot #1](https://i.imgur.com/vTi9LxX.png)
 
 
-### Permanent Installation
-
-1. Exit Discord.
-2. Go to `%appdata%\discord\0.0.307\modules\discord_desktop_core`.
-3. Replace `index.js` with [this file](https://raw.githubusercontent.com/OnceDot/Distools/master/injector.js).
-4. Restart Discord.
-
-
 ### Single Use
 
 1. Focus the Discord window.
 2. Open the development console by pressing <kbd>Control</kbd>+<kbd>Shift</kbd>+<kbd>I</kbd>.
-3. Copy [this code](https://raw.githubusercontent.com/OnceDot/Distools/master/dist/main.js) and paste it in the console.
+3. Copy [this code](https://raw.githubusercontent.com/OnceDot/Distools/master/dist/script.js) and paste it in the console.
 4. Enjoy. 😉
+
+
+### Permanent Installation
+
+1. Exit Discord.
+2. Go to `%appdata%\discord\0.0.307\modules\discord_desktop_core`.
+3. Replace `index.js` with [this file](https://raw.githubusercontent.com/OnceDot/Distools/master/dist/injector.js).
+4. Restart Discord.
 
 
 ### Link to Lumz
