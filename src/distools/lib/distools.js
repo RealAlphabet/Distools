@@ -3,7 +3,6 @@ import {
     DiscordAPI,
     DiscordConstants,
     DiscordUser,
-    DiscordToken,
     DiscordMembers,
     DiscordChannels,
     DiscordMessages,
@@ -12,8 +11,16 @@ import {
     DiscordReceiveMessages
 } from './utilities';
 
+import * as a from './utilities';
 
-/* DISTOOLS */
+console.log(a);
+
+import style from '@/gui/custom.css';
+
+const node = document.createElement('style');
+node.innerText = style;
+document.head.append(node);
+
 export default {
     async searchSharedFriends(userId) {
         var members = this.members;
@@ -151,64 +158,28 @@ export default {
         return result.reverse();
     },
 
-    async saveMessages() {
+    saveMessages() {
         alert('Starting downloading conversation.\nPlease do not click any buttons of the menu !');
 
-        var members = this.members;
-        var member;
-
-        var messages = await this.fetchAllMessages();
-        var message;
-
-        var membersList = [];
-        var messagesList = [];
-
-        for (message of messages) {
-            messagesList.push({
-                id: message.id,
-                author: message.author.id,
-                content: message.content,
-                timestamp: message.timestamp
-            })
-        }
-
-        members.push(this.user);
-
-        for (member of members) {
-            membersList.push({
+        this.fetchAllMessages().then(messages => {
+            const members = this.members.map(member => ({
                 id: member.id,
                 username: member.username,
                 discriminator: member.discriminator,
                 avatar: member.avatar
-            });
-        }
+            }));
 
-        this.downloadTextFile(`${messages[0].channel_id}.json`, JSON.stringify({
-            members: membersList,
-            messages: messagesList
-        }, null, 2));
-    },
+            members.push(this.user);
 
-    async anarchy() {
-        var messages = this.messages.reverse();
-        var message;
-
-        var reactions = ['🇨', '🇴', '🇺', '🇷', '🇦', '🇬', '🇪'];
-        var reaction;
-
-        for (message of messages) {
-            for (reaction of reactions) {
-                await this.addReaction(message, reaction);
-                await sleep(95);
-            }
-        }
-    },
-
-    addReaction(message, reaction = "🍆") {
-        return new Promise((resolve, reject) => {
-            DiscordAPI.put(DiscordConstants.Endpoints.REACTION(message.channel_id, message.id, reaction, "@me"))
-                .then(resolve)
-                .catch(reject);
+            this.downloadTextFile(`${messages[0].channel_id}.json`, JSON.stringify({
+                members,
+                messages: messages.map(message => ({
+                    id: message.id,
+                    author: message.author.id,
+                    content: message.content,
+                    timestamp: message.timestamp
+                }))
+            }, null, 2));
         });
     },
 
@@ -228,11 +199,8 @@ export default {
     },
 
     deleteMessage(channelId, messageId) {
-        return new Promise((resolve, reject) => {
-            DiscordAPI.delete(`${DiscordConstants.Endpoints.MESSAGES(channelId)}/${messageId}`)
-                .then(data => resolve(data.body))
-                .catch(reject);
-        });
+        return DiscordAPI.delete(`${DiscordConstants.Endpoints.MESSAGES(channelId)}/${messageId}`)
+            .then(data => data.body);
     },
 
     get receiveMessages() {
@@ -240,8 +208,9 @@ export default {
     },
 
     get members() {
-        if (this.selectedGuildId) return DiscordMembers.getMembers(this.selectedGuildId);
-        else return this.selectedChannel._getUsers();
+        return this.SelectedGuildId
+            ? DiscordMembers.getMembers(this.selectedGuildId)
+            : DiscordChannels.getChannel(this.selectedChannelId).rawRecipients;
     },
 
     get selectedGuildId() {
@@ -262,15 +231,5 @@ export default {
 
     get user() {
         return DiscordUser.getCurrentUser();
-    },
-
-    get token() {
-        return DiscordToken.getToken();
-    },
-
-    _test() {
-        var style = document.createElement('style');
-        style.innerHTML = ".video-8eMOth, .imageWrapper-2p5ogY > img { transition: filter ease-in-out .25s; filter: blur(0.6rem); }\n.video-8eMOth:hover, .imageWrapper-2p5ogY > img:hover { filter: unset; }";
-        document.head.append(style);
     }
 };

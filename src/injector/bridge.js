@@ -68,7 +68,7 @@ export default function () {
 
     // Properly close Websocket Servers
 
-    window.addEventListener('beforeload', function () {
+    window.addEventListener('beforeunload', function () {
         SERVERS.forEach(ws => ws.close())
     });
 

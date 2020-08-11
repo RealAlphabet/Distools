@@ -1,0 +1,48 @@
+:root {
+    --background-tertiary: #060606;
+    --background-floating: #0c0c0c;
+    --background-primary: #000;
+    --background-secondary: #0c0c0c;
+    --background-secondary-alt: #080808;
+    --channeltextarea-background: #0c0c0c;
+    --background-modifier-selected: #060606;
+    --interactive-muted: #0c0c0c;
+    --channels-default: #00ff72;
+    --text-normal: #00ff72;
+    --text-link: #00bd48;
+}
+
+.form-2fGMdU:before {
+    background: 0 !important;
+}
+
+.scroller-2FKFPG::-webkit-scrollbar-thumb {
+    background-color: var(--background-secondary) !important;
+    border: 0 !important;
+}
+
+.scroller-2FKFPG::-webkit-scrollbar-track-piece {
+    background: 0 !important;
+    border: 0 !important;
+}
+
+.wrapper-3WhCwL {
+    background: #43ff521a !important;
+    color: var(--text-normal) !important;
+}
+
+.interactive:hover {
+    background-color: #00bd48 !important;
+}
+
+.headerNormal-T_seeN {
+    background-color: var(--background-tertiary) !important;
+}
+
+.body-3iLsc4, .footer-1fjuF6, .inset-3sAvek {
+    background-color: var(--background-secondary) !important;
+}
+
+.container-1D34oG  {
+    background-color: var(--background-primary) !important;
+}

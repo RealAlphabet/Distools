@@ -72,7 +72,6 @@ export default [
             "stream",
             "zlib",
             "path"
-        ],
-        treeshake: false
+        ]
     }
 ]
