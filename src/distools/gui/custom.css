@@ -10,6 +10,8 @@
     --channels-default: #00ff72;
     --text-normal: #00ff72;
     --text-link: #00bd48;
+    --custom-background: #1fb940;
+    --custom-background-hover: #1eac3d;
 }
 
 .form-2fGMdU:before {
@@ -18,7 +20,7 @@
 
 .scroller-2FKFPG::-webkit-scrollbar-thumb {
     background-color: var(--background-secondary) !important;
-    border: 0 !important;
+    border-color: 0 !important;
 }
 
 .scroller-2FKFPG::-webkit-scrollbar-track-piece {
@@ -31,18 +33,44 @@
     color: var(--text-normal) !important;
 }
 
-.interactive:hover {
-    background-color: #00bd48 !important;
-}
-
 .headerNormal-T_seeN {
     background-color: var(--background-tertiary) !important;
 }
 
+.root-1gCeng,
 .body-3iLsc4, .footer-1fjuF6, .inset-3sAvek {
     background-color: var(--background-secondary) !important;
 }
 
+.footer-2gL1pp,
 .container-1D34oG  {
     background-color: var(--background-primary) !important;
+}
+
+.input-cIJ7To.focused-1mmYsC, .input-cIJ7To:focus {
+    border-color: var(--text-normal) !important;
+}
+
+.newMessagesBar-mujexs {
+    background-color: var(--text-link) !important;
+}
+
+.avatarUploaderInner-3UNxY3,
+.barFill-23-gu-,
+.valueChecked-m-4IJZ,
+.lookFilled-1Gx00P.colorBrand-3pXr91,
+.wrapper-1BJsBx.selected-bZ3Lue .childWrapper-anI2G9, .wrapper-1BJsBx:hover .childWrapper-anI2G9,
+.headerPlaying-j0WQBV, .topSectionPlaying-1J5E4n {
+    background: var(--custom-background) !important;
+}
+
+.lookFilled-1Gx00P.colorBrand-3pXr91:hover,
+.interactive:hover {
+    background-color: var(--custom-background-hover) !important;
+}
+
+.root-1gCeng,
+.userPopout-3XzG_A {
+    -webkit-box-shadow: 0 2px 10px 0 rgba(0,0,0,.2), 0 0 0 1px rgba(0, 0, 0, 0.6) !important;
+    box-shadow: 0 2px 10px 0 rgba(0,0,0,.2), 0 0 0 1px rgba(0, 0, 0, 0.6) !important;
 }
