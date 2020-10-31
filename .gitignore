@@ -1,4 +1,15 @@
-.github
-node_modules
-pnpm-lock.yaml
-package.json.lock
+# Ignore everything
+*
+
+# Except src and dist
+!dist/
+!src/
+
+# Except package.json and rollup config
+!package.json
+!rollup.config.js
+
+# Except essentials
+!.gitignore
+!LICENSE
+!README.md

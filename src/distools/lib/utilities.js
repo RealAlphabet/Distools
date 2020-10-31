@@ -78,11 +78,13 @@ export const ReactDOM = WebpackModules.getByProps("render", "findDOMNode");
 export const DiscordAPI = WebpackModules.getByProps("getAPIBaseURL");
 export const DiscordConstants = WebpackModules.getByProps("Permissions", "ActivityTypes", "StatusTypes");
 export const DiscordUser = WebpackModules.getByProps("getCurrentUser");
+export const DiscordLogin = WebpackModules.getByProps("getToken");
 
 export const DiscordMembers = WebpackModules.getByProps("getMember");
 export const DiscordChannels = WebpackModules.getByProps("getChannels");
 export const DiscordMessages = WebpackModules.getByProps("getMessages");
 export const SelectedGuildId = WebpackModules.getByProps("getLastSelectedGuildId");
 export const SelectedChannelId = WebpackModules.getByProps("getLastSelectedChannelId");
+export const UsersManager = WebpackModules.getByProps("getUsers");
 
 export const DiscordReceiveMessages = WebpackModules.getByProps("receiveMessage", "sendBotMessage");

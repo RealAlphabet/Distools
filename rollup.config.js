@@ -14,7 +14,7 @@ export default [
         input: 'src/distools/index.js',
         output: {
             format: 'iife',
-            file: 'dist/script.js'
+            file: 'dist/script.gui.js'
         },
         plugins: [
             babel({
@@ -34,6 +34,29 @@ export default [
                         }
                     ],
                     '@babel/transform-react-jsx'
+                ],
+                babelHelpers: 'bundled'
+            }),
+            terser()
+        ]
+    },
+    {
+        input: 'src/distools/cmd.js',
+        output: {
+            format: 'iife',
+            file: 'dist/script.js'
+        },
+        plugins: [
+            babel({
+                babelrc: false,
+                plugins: [
+                    [
+                        'root-import',
+                        {
+                            rootPathPrefix: '@/',
+                            rootPathSuffix: 'src/distools'
+                        }
+                    ]
                 ],
                 babelHelpers: 'bundled'
             }),
