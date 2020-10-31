@@ -1,15 +1,15 @@
 # Ignore everything
-*
+/*
 
-# Except src and dist
+# Except dist and src
 !dist/
 !src/
 
-# Except package.json and rollup config
+# Except configurations
+!.gitignore
 !package.json
 !rollup.config.js
 
-# Except essentials
-!.gitignore
+# Except LICENSE and README
 !LICENSE
 !README.md
