@@ -4,12 +4,11 @@ import {
     DiscordConstants,
     DiscordUser,
     DiscordMembers,
-    DiscordChannels,
+    DiscordChannel,
     DiscordMessages,
     SelectedGuildId,
     SelectedChannelId,
     UsersManager,
-    DiscordReceiveMessages
 } from './utilities';
 
 
@@ -189,28 +188,33 @@ export default {
         return result.reverse();
     },
 
-    saveMessages() {
+    saveMessages(channel = this.selectedChannelId) {
         alert('Starting downloading conversation.\nPlease do not click any buttons of the menu !');
 
-        this.fetchAllMessages().then(messages => {
-            const members = this.members.map(member => ({
-                id: member.id,
-                username: member.username,
-                discriminator: member.discriminator,
-                avatar: member.avatar
-            }));
+        this.fetchAllMessages(channel).then(messages => {
+            const users = new Map();
 
-            members.push(this.user);
+            messages = messages.map(message => {
+                // Save message sender.
+                users.set(message.author.id, message.author);
+
+                /* @Fix : Clone the message
+                 * Remove the message author from reference.
+                 *
+                 * @Fix : Because Discord hook fetch (to cache the received messages ?)
+                 * we can't replace the author of the original reference without crashing our client.
+                 */
+                message = {...message};
+                message.author = message.author.id;
+                delete message.channel_id;
+                return message;
+            });
 
             this.downloadTextFile(`${messages[0].channel_id}.json`, JSON.stringify({
-                members,
-                messages: messages.map(message => ({
-                    id: message.id,
-                    author: message.author.id,
-                    content: message.content,
-                    timestamp: message.timestamp
-                }))
-            }, null, 2));
+                channel,
+                users: [...users.values()],
+                messages
+            }));
         });
     },
 
@@ -229,14 +233,10 @@ export default {
         window.URL.revokeObjectURL(url);
     },
 
-    get receiveMessages() {
-        return DiscordReceiveMessages;
-    },
-
     get members() {
-        return this.SelectedGuildId
+        return this.selectedGuildId
             ? DiscordMembers.getMembers(this.selectedGuildId)
-            : DiscordChannels.getChannel(this.selectedChannelId).rawRecipients;
+            : DiscordChannel.getChannel(this.selectedChannelId).rawRecipients;
     },
 
     get users() {
@@ -252,7 +252,7 @@ export default {
     },
 
     get selectedChannel() {
-        return DiscordChannels.getChannel(this.selectedChannelId);
+        return DiscordChannel.getChannel(this.selectedChannelId);
     },
 
     get messages() {

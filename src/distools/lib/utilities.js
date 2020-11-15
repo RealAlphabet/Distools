@@ -64,7 +64,7 @@ export const WebpackModules = {
         delete this._require[id];
         return this._require;
     }
-}
+};
 
 
 ////////////////////////////////////////////
@@ -81,6 +81,7 @@ export const DiscordUser = WebpackModules.getByProps("getCurrentUser");
 export const DiscordLogin = WebpackModules.getByProps("getToken");
 
 export const DiscordMembers = WebpackModules.getByProps("getMember");
+export const DiscordChannel = WebpackModules.getByProps("getChannel");
 export const DiscordChannels = WebpackModules.getByProps("getChannels");
 export const DiscordMessages = WebpackModules.getByProps("getMessages");
 export const SelectedGuildId = WebpackModules.getByProps("getLastSelectedGuildId");
