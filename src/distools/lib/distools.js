@@ -23,21 +23,32 @@ export default {
 
     async searchSharedFriends(who) {
         let users = Object.values(this.users);
-        let result = [];
+        let promises = [];
 
-        // Load all relationships.
-        for (let user of users) {
-            if (user.relationships === undefined) {
-                user.relationships = await DiscordAPI.get(DiscordConstants.Endpoints.USER_RELATIONSHIPS(user.id));
-                user.relationships = JSON.parse(user.relationships.text);
+        // Fetch all relationships.
+        for (let user of users)
+            if (user.relationships)
+                promises.push(Promise.resolve(user));
+
+            else {
+                promises.push(DiscordAPI.get(DiscordConstants.Endpoints.USER_RELATIONSHIPS(user.id)).then(({ text }) => {
+                    return user.relationships = JSON.parse(text),
+                        user;
+                }));
+
+                await sleep(20);
             }
 
-            if (user.relationships.length)
-                result.push(user);
-        }
+        // Find relationships of the user.
+        return Promise.all(promises).then(users => {
+            return users.filter(({ relationships }) => {
+                return relationships.find(({ id })  => id === who);
+            });
+        });
+    },
 
-        // Return friends of selected user.
-        return result.filter(user => user.relationships.find(relationship => relationship.id === who));
+    fetchAllMembers() {
+        console.log(DiscordConstants.Endpoints);
     },
 
 
@@ -47,13 +58,23 @@ export default {
 
 
     searchGuildMessages(where = this.selectedGuildId, user = this.user.id, offset = 0) {
-        return DiscordAPI.get(DiscordConstants.Endpoints.SEARCH_GUILD(where) + `?author_id=${user}&include_nsfw=true&offset=${offset}`)
-            .then(data => data.body);
+        return new Promise(resolve => {
+            DiscordAPI.get(DiscordConstants.Endpoints.SEARCH_GUILD(where) + `?author_id=${user}&include_nsfw=true&offset=${offset}`)
+                .then(res => res.body)
+                .catch(res => {
+                    setTimeout(() => resolve(this.searchGuildMessages(where, user, offset)), res.body.retry_after * 1000);
+                });
+        });
     },
 
     searchChannelMessages(where = this.selectedChannelId, user = this.user.id, offset = 0) {
-        return DiscordAPI.get(DiscordConstants.Endpoints.SEARCH_CHANNEL(where) + `?author_id=${user}&offset=${offset}`)
-            .then(data => data.body);
+        return new Promise(resolve => {
+            DiscordAPI.get(DiscordConstants.Endpoints.SEARCH_CHANNEL(where) + `?author_id=${user}&offset=${offset}`)
+                .then(res => resolve(res.body))
+                .catch(res => {
+                    setTimeout(() => resolve(this.searchChannelMessages(where, user, offset)), res.body.retry_after * 1000);
+                });
+        });
     },
 
     async searchAllMessages(func, where, user, hit = true) {
@@ -61,12 +82,16 @@ export default {
         let offset = 0;
         let result;
 
-        while ((result = await func(where, user, offset)).messages.length) {
+        while ((result = await func.call(this, where, user, offset)).messages.length) {
             // Push all messages.
             messages.push(...result.messages);
 
             // Increment search offset.
             offset += result.messages.length;
+
+            // @FIX : We can't search for more than 1500 messages per minute.
+            if (messages.length >= 1500)
+                break;
         }
 
         // Sort messages if necessary.
@@ -90,8 +115,13 @@ export default {
 
 
     deleteMessage(channel, message) {
-        return DiscordAPI.delete(DiscordConstants.Endpoints.MESSAGES(channel) + '/' + message)
-            .then(data => data.body);
+        return new Promise(resolve => {
+            DiscordAPI.delete(DiscordConstants.Endpoints.MESSAGES(channel) + '/' + message)
+                .then(resolve)
+                .catch(res => {
+                    setTimeout(() => resolve(this.deleteMessage(channel, message)), res.body.retry_after * 1000);
+                });
+        });
     },
 
     async deleteSearchMessages(func, where, user) {
@@ -113,7 +143,7 @@ export default {
             // Delete message and wait.
             if (message.type == 0) {
                 await this.deleteMessage(message.channel_id, message.id);
-                await sleep(850);
+                await sleep(150);
             }
         }
 
