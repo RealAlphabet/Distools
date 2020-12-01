@@ -14,11 +14,36 @@ import {
 
 export default {
 
+    ///////////////////////////////////////////////////////////
+    //  UTILS
+    ///////////////////////////////////////////////////////////
+
+
+    fetchRetry(method, endpoint) {
+        return new Promise((resolve, reject) => {
+            method(endpoint)
+                .then(res => resolve(res.body))
+                .catch(res => {
+                    res.statusCode == 429
+                        ? setTimeout(() => resolve(this.fetchRetry(method, endpoint)), res.body.retry_after * 1000)
+                        : reject(res);
+                });
+        });
+    },
+
 
     ///////////////////////////////////////////////////////////
     //  UNIQUE TOOLS
     ///////////////////////////////////////////////////////////
 
+
+    fetchRelationships(id) {
+        return this.fetchRetry(DiscordAPI.get, DiscordConstants.Endpoints.USER_RELATIONSHIPS(id));
+    },
+
+    fetchAllMembers() {
+        console.log(DiscordConstants.Endpoints);
+    },
 
     async searchSharedFriends(who) {
         let users = Object.values(this.users);
@@ -30,12 +55,11 @@ export default {
                 promises.push(Promise.resolve(user));
 
             else {
-                promises.push(DiscordAPI.get(DiscordConstants.Endpoints.USER_RELATIONSHIPS(user.id)).then(({ text }) => {
-                    return user.relationships = JSON.parse(text),
-                        user;
+                promises.push(this.fetchRelationships(user.id).then(relationships => {
+                    return (user.relationships = relationships), user;
                 }));
 
-                await sleep(20);
+                await sleep(25);
             }
 
         // Find relationships of the user.
@@ -46,10 +70,6 @@ export default {
         });
     },
 
-    fetchAllMembers() {
-        console.log(DiscordConstants.Endpoints);
-    },
-
 
     ///////////////////////////////////////////////////////////
     //  SEARCH MESSAGES
@@ -57,23 +77,11 @@ export default {
 
 
     searchGuildMessages(where = this.selectedGuildId, user = this.user.id, offset = 0) {
-        return new Promise(resolve => {
-            DiscordAPI.get(DiscordConstants.Endpoints.SEARCH_GUILD(where) + `?author_id=${user}&include_nsfw=true&offset=${offset}`)
-                .then(res => resolve(res.body))
-                .catch(res => {
-                    setTimeout(() => resolve(this.searchGuildMessages(where, user, offset)), res.body.retry_after * 1000);
-                });
-        });
+        return this.fetchRetry(DiscordAPI.get, DiscordConstants.Endpoints.SEARCH_GUILD(where) + `?author_id=${user}&include_nsfw=true&offset=${offset}`);
     },
 
     searchChannelMessages(where = this.selectedChannelId, user = this.user.id, offset = 0) {
-        return new Promise(resolve => {
-            DiscordAPI.get(DiscordConstants.Endpoints.SEARCH_CHANNEL(where) + `?author_id=${user}&offset=${offset}`)
-                .then(res => resolve(res.body))
-                .catch(res => {
-                    setTimeout(() => resolve(this.searchChannelMessages(where, user, offset)), res.body.retry_after * 1000);
-                });
-        });
+        return this.fetchRetry(DiscordAPI.get, DiscordConstants.Endpoints.SEARCH_CHANNEL(where) + `?author_id=${user}&offset=${offset}`);
     },
 
     async searchAllMessages(func, where, user, hit = true) {
@@ -114,13 +122,7 @@ export default {
 
 
     deleteMessage(channel, message) {
-        return new Promise(resolve => {
-            DiscordAPI.delete(DiscordConstants.Endpoints.MESSAGES(channel) + '/' + message)
-                .then(resolve)
-                .catch(res => {
-                    setTimeout(() => resolve(this.deleteMessage(channel, message)), res.body.retry_after * 1000);
-                });
-        });
+        return this.fetchRetry(DiscordAPI.delete, DiscordConstants.Endpoints.MESSAGES(channel) + '/' + message);
     },
 
     async deleteSearchMessages(func, where, user) {
