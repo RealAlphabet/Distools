@@ -59,7 +59,7 @@ export default {
     searchGuildMessages(where = this.selectedGuildId, user = this.user.id, offset = 0) {
         return new Promise(resolve => {
             DiscordAPI.get(DiscordConstants.Endpoints.SEARCH_GUILD(where) + `?author_id=${user}&include_nsfw=true&offset=${offset}`)
-                .then(res => res.body)
+                .then(res => resolve(res.body))
                 .catch(res => {
                     setTimeout(() => resolve(this.searchGuildMessages(where, user, offset)), res.body.retry_after * 1000);
                 });
@@ -81,7 +81,7 @@ export default {
         let offset = 0;
         let result;
 
-        while ((result = await func.call(this, where, user, offset)).messages.length) {
+        while ((result = await func(where, user, offset)).messages.length) {
             // Push all messages.
             messages.push(...result.messages);
 
@@ -140,7 +140,7 @@ export default {
             console.log(`[DISTOOLS][🗑️] ${progress} / ${messages.length} messages.`);
 
             // Delete message and wait.
-            if (message.type == 0) {
+            if (message.type == 0 || message.type == 19) {
                 await this.deleteMessage(message.channel_id, message.id);
                 await sleep(150);
             }
