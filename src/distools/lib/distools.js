@@ -12,7 +12,7 @@ import {
 } from './utilities';
 
 
-export default {
+const Distools = {
 
     ///////////////////////////////////////////////////////////
     //  UTILS
@@ -25,7 +25,7 @@ export default {
                 .then(res => resolve(res.body))
                 .catch(res => {
                     res.statusCode == 429
-                        ? setTimeout(() => resolve(this.fetchRetry(method, endpoint)), res.body.retry_after * 1000)
+                        ? setTimeout(() => resolve(Distools.fetchRetry(method, endpoint)), res.body.retry_after * 1000)
                         : reject(res);
                 });
         });
@@ -38,7 +38,7 @@ export default {
 
 
     fetchRelationships(id) {
-        return this.fetchRetry(DiscordAPI.get, DiscordConstants.Endpoints.USER_RELATIONSHIPS(id));
+        return Distools.fetchRetry(DiscordAPI.get, DiscordConstants.Endpoints.USER_RELATIONSHIPS(id));
     },
 
     fetchAllMembers() {
@@ -46,7 +46,7 @@ export default {
     },
 
     async searchSharedFriends(who) {
-        let users = Object.values(this.users);
+        let users = Object.values(Distools.users);
         let promises = [];
 
         // Fetch all relationships.
@@ -55,7 +55,7 @@ export default {
                 promises.push(Promise.resolve(user));
 
             else {
-                promises.push(this.fetchRelationships(user.id).then(relationships => {
+                promises.push(Distools.fetchRelationships(user.id).then(relationships => {
                     return (user.relationships = relationships), user;
                 }));
 
@@ -76,12 +76,12 @@ export default {
     ///////////////////////////////////////////////////////////
 
 
-    searchGuildMessages(where = this.selectedGuildId, user = this.user.id, offset = 0) {
-        return this.fetchRetry(DiscordAPI.get, DiscordConstants.Endpoints.SEARCH_GUILD(where) + `?author_id=${user}&include_nsfw=true&offset=${offset}`);
+    searchGuildMessages(where = Distools.selectedGuildId, user = Distools.user.id, offset = 0) {
+        return Distools.fetchRetry(DiscordAPI.get, DiscordConstants.Endpoints.SEARCH_GUILD(where) + `?author_id=${user}&include_nsfw=true&offset=${offset}`);
     },
 
-    searchChannelMessages(where = this.selectedChannelId, user = this.user.id, offset = 0) {
-        return this.fetchRetry(DiscordAPI.get, DiscordConstants.Endpoints.SEARCH_CHANNEL(where) + `?author_id=${user}&offset=${offset}`);
+    searchChannelMessages(where = Distools.selectedChannelId, user = Distools.user.id, offset = 0) {
+        return Distools.fetchRetry(DiscordAPI.get, DiscordConstants.Endpoints.SEARCH_CHANNEL(where) + `?author_id=${user}&offset=${offset}`);
     },
 
     async searchAllMessages(func, where, user, hit = true) {
@@ -107,12 +107,12 @@ export default {
             : messages;
     },
 
-    searchAllGuildMessages(where = this.selectedGuildId, user = this.user.id, hit = true) {
-        return this.searchAllMessages(this.searchGuildMessages, where, user, hit);
+    searchAllGuildMessages(where = Distools.selectedGuildId, user = Distools.user.id, hit = true) {
+        return Distools.searchAllMessages(Distools.searchGuildMessages, where, user, hit);
     },
 
-    searchAllChannelMessages(where = this.selectedChannelId, user = this.user.id, hit = true) {
-        return this.searchAllMessages(this.searchChannelMessages, where, user, hit);
+    searchAllChannelMessages(where = Distools.selectedChannelId, user = Distools.user.id, hit = true) {
+        return Distools.searchAllMessages(Distools.searchChannelMessages, where, user, hit);
     },
 
 
@@ -122,28 +122,28 @@ export default {
 
 
     deleteMessage(channel, message) {
-        return this.fetchRetry(DiscordAPI.delete, DiscordConstants.Endpoints.MESSAGES(channel) + '/' + message);
+        return Distools.fetchRetry(DiscordAPI.delete, DiscordConstants.Endpoints.MESSAGES(channel) + '/' + message);
     },
 
     async deleteSearchMessages(func, where, user) {
-        let messages = await this.searchAllMessages(func, where, user);
+        let messages = await Distools.searchAllMessages(func, where, user);
         let progress = 0;
 
         // Set progression steps.
-        this.progressBar.setSteps(messages.length);
+        Distools.progressBar.setSteps(messages.length);
 
         // Delete all found messages.
         for (let message of messages) {
 
             // Set progression.
-            this.progressBar.setProgress(++progress);
+            Distools.progressBar.setProgress(++progress);
 
             // Show debug message.
             console.log(`[DISTOOLS][🗑️] ${progress} / ${messages.length} messages.`);
 
             // Delete message and wait.
             if (message.type == 0 || message.type == 19) {
-                await this.deleteMessage(message.channel_id, message.id);
+                await Distools.deleteMessage(message.channel_id, message.id);
                 await sleep(150);
             }
         }
@@ -153,15 +153,15 @@ export default {
 
         // Wait a bit and reset progress bar.
         await sleep(2000);
-        this.progressBar.setProgress(0);
+        Distools.progressBar.setProgress(0);
     },
 
-    deleteGuildMessages(where = this.selectedGuildId, user = this.user.id) {
-        return this.deleteSearchMessages(this.searchGuildMessages, where, user);
+    deleteGuildMessages(where = Distools.selectedGuildId, user = Distools.user.id) {
+        return Distools.deleteSearchMessages(Distools.searchGuildMessages, where, user);
     },
 
-    deleteChannelMessages(where = this.selectedChannelId, user = this.user.id) {
-        return this.deleteSearchMessages(this.searchChannelMessages, where, user);
+    deleteChannelMessages(where = Distools.selectedChannelId, user = Distools.user.id) {
+        return Distools.deleteSearchMessages(Distools.searchChannelMessages, where, user);
     },
 
 
@@ -171,8 +171,8 @@ export default {
     ///////////////////////////////////////////////////////////
 
 
-    async fetchAllMessages(channelId = this.selectedChannelId) {
-        let messages = this.messages.reverse();
+    async fetchAllMessages(channelId = Distools.selectedChannelId) {
+        let messages = Distools.messages.reverse();
         let result = [];
 
         do {
@@ -190,10 +190,10 @@ export default {
         return result.reverse();
     },
 
-    saveMessages(channel = this.selectedChannelId) {
+    saveMessages(channel = Distools.selectedChannelId) {
         alert('Starting downloading conversation.\nPlease do not click any buttons of the menu !');
 
-        this.fetchAllMessages(channel).then(messages => {
+        Distools.fetchAllMessages(channel).then(messages => {
             const users = new Map();
 
             messages = messages.map(message => {
@@ -212,7 +212,7 @@ export default {
                 return message;
             });
 
-            this.downloadTextFile(`${messages[0].channel_id}.json`, JSON.stringify({
+            Distools.downloadTextFile(`${messages[0].channel_id}.json`, JSON.stringify({
                 channel,
                 users: [...users.values()],
                 messages
@@ -236,9 +236,9 @@ export default {
     },
 
     get members() {
-        return this.selectedGuildId
-            ? DiscordMembers.getMembers(this.selectedGuildId)
-            : DiscordChannel.getChannel(this.selectedChannelId).rawRecipients;
+        return Distools.selectedGuildId
+            ? DiscordMembers.getMembers(Distools.selectedGuildId)
+            : DiscordChannel.getChannel(Distools.selectedChannelId).rawRecipients;
     },
 
     get users() {
@@ -254,14 +254,16 @@ export default {
     },
 
     get selectedChannel() {
-        return DiscordChannel.getChannel(this.selectedChannelId);
+        return DiscordChannel.getChannel(Distools.selectedChannelId);
     },
 
     get messages() {
-        return DiscordMessages.getMessages(this.selectedChannelId).toArray();
+        return DiscordMessages.getMessages(Distools.selectedChannelId).toArray();
     },
 
     get user() {
         return DiscordUser.getCurrentUser();
     }
 };
+
+export default Distools;
