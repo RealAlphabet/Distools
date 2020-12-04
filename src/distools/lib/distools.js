@@ -1,5 +1,9 @@
+import { hijack } from '@/lib/hijacker';
+
 import {
     sleep,
+    fetchRetry,
+    downloadTextFile,
     DiscordAPI,
     DiscordConstants,
     DiscordUser,
@@ -9,27 +13,13 @@ import {
     SelectedGuildId,
     SelectedChannelId,
     UsersManager,
-} from './utilities';
+} from '@/lib/utilities';
 
 
-const Distools = {
-
-    ///////////////////////////////////////////////////////////
-    //  UTILS
-    ///////////////////////////////////////////////////////////
+export const Distools = {
 
 
-    fetchRetry(method, endpoint) {
-        return new Promise((resolve, reject) => {
-            method(endpoint)
-                .then(res => resolve(res.body))
-                .catch(res => {
-                    res.statusCode == 429
-                        ? setTimeout(() => resolve(Distools.fetchRetry(method, endpoint)), res.body.retry_after * 1000)
-                        : reject(res);
-                });
-        });
-    },
+    hijack,
 
 
     ///////////////////////////////////////////////////////////
@@ -38,7 +28,7 @@ const Distools = {
 
 
     fetchRelationships(id) {
-        return Distools.fetchRetry(DiscordAPI.get, DiscordConstants.Endpoints.USER_RELATIONSHIPS(id));
+        return fetchRetry(DiscordAPI.get, DiscordConstants.Endpoints.USER_RELATIONSHIPS(id));
     },
 
     fetchAllMembers() {
@@ -77,11 +67,11 @@ const Distools = {
 
 
     searchGuildMessages(where = Distools.selectedGuildId, user = Distools.user.id, offset = 0) {
-        return Distools.fetchRetry(DiscordAPI.get, DiscordConstants.Endpoints.SEARCH_GUILD(where) + `?author_id=${user}&include_nsfw=true&offset=${offset}`);
+        return fetchRetry(DiscordAPI.get, DiscordConstants.Endpoints.SEARCH_GUILD(where) + `?author_id=${user}&include_nsfw=true&offset=${offset}`);
     },
 
     searchChannelMessages(where = Distools.selectedChannelId, user = Distools.user.id, offset = 0) {
-        return Distools.fetchRetry(DiscordAPI.get, DiscordConstants.Endpoints.SEARCH_CHANNEL(where) + `?author_id=${user}&offset=${offset}`);
+        return fetchRetry(DiscordAPI.get, DiscordConstants.Endpoints.SEARCH_CHANNEL(where) + `?author_id=${user}&offset=${offset}`);
     },
 
     async searchAllMessages(func, where, user, hit = true) {
@@ -122,7 +112,7 @@ const Distools = {
 
 
     deleteMessage(channel, message) {
-        return Distools.fetchRetry(DiscordAPI.delete, DiscordConstants.Endpoints.MESSAGES(channel) + '/' + message);
+        return fetchRetry(DiscordAPI.delete, DiscordConstants.Endpoints.MESSAGES(channel) + '/' + message);
     },
 
     async deleteSearchMessages(func, where, user) {
@@ -167,7 +157,6 @@ const Distools = {
 
     ///////////////////////////////////////////////////////////
     //  SAVE MESSAGES
-    //  @TODO
     ///////////////////////////////////////////////////////////
 
 
@@ -212,7 +201,7 @@ const Distools = {
                 return message;
             });
 
-            Distools.downloadTextFile(`${messages[0].channel_id}.json`, JSON.stringify({
+            downloadTextFile(`${channel}.json`, JSON.stringify({
                 channel,
                 users: [...users.values()],
                 messages
@@ -220,20 +209,11 @@ const Distools = {
         });
     },
 
-    downloadTextFile(fileName, fileContents) {
-        let url = window.URL.createObjectURL(new Blob([fileContents], { "type": "octet/stream" }));
-        let a = document.createElement("a");
 
-        a.href = url;
-        a.download = fileName;
-        a.style.display = "none";
+    ///////////////////////////////////////////////////////////
+    //  GETTERS
+    ///////////////////////////////////////////////////////////
 
-        document.body.prepend(a);
-        a.click();
-
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-    },
 
     get members() {
         return Distools.selectedGuildId

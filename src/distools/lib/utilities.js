@@ -8,6 +8,30 @@ export function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+export function fetchRetry(method, endpoint) {
+    return new Promise((resolve, reject) => {
+        method(endpoint)
+            .then(res => resolve(res.body))
+            .catch(res => {
+                res.statusCode == 429
+                    ? setTimeout(() => resolve(fetchRetry(method, endpoint)), res.body.retry_after * 1000)
+                    : reject(res);
+            });
+    });
+}
+
+export function downloadTextFile(fileName, fileContents) {
+    let url = window.URL.createObjectURL(new Blob([fileContents], { "type": "octet/stream" }));
+    let a = document.createElement("a");
+
+    a.href = url;
+    a.download = fileName;
+    a.style.display = "none";
+    a.click();
+
+    window.URL.revokeObjectURL(url);
+}
+
 
 ////////////////////////////////////////////
 //  WEBPACK
@@ -71,6 +95,9 @@ export const WebpackModules = {
 //  MODULES
 ////////////////////////////////////////////
 
+
+export const Inflate = WebpackModules.getByProps("Inflate").Inflate;
+export const ErlpackClass = WebpackModules.getByProps("getErlpackEncoding").getErlpackEncoding();
 
 export const React = WebpackModules.getByProps("createElement", "cloneElement");
 export const ReactDOM = WebpackModules.getByProps("render", "findDOMNode");
