@@ -18,6 +18,7 @@ function newPacker() {
     }
 }
 
+// @TODO : Simplify with a new "hook" function.
 function hijackWebSocket() {
     return new Promise(resolve => {
         const original = WebSocket.prototype.send;
@@ -37,28 +38,20 @@ function hijackWebSocket() {
     });
 }
 
-function hijackInflate(callback) {
+// @TODO : Simplify with a new "hook" function.
+function hijackInflate() {
     return new Promise(resolve => {
-        const originalPush = Inflate.prototype.push;
+        const original = Inflate.prototype.push;
 
         Inflate.prototype.push = function () {
-            const originalOnEnd = this.onEnd;
-
-            // Hook on end custom function of Discord.
-            this.onEnd = function () {
-                callback(this.chunks);
-                return originalOnEnd.apply(this, arguments);
-            };
 
             // Restore original function.
-            Inflate.prototype.push = originalPush;
+            Inflate.prototype.push = original;
 
-            // Return a way to restore original function.
-            resolve(() => {
-                this.onEnd = originalOnEnd;
-            });
+            // Resolve Inflate context.
+            resolve(this);
 
-            return originalPush.apply(this, arguments);
+            return original.apply(this, arguments);
         };
     });
 }
@@ -70,27 +63,39 @@ function hijackInflate(callback) {
 
 
 export function hijack() {
-    const Hijacker = { onPacket: () => 0 };
-    const Packer = newPacker();
-
-    // Try to hook WebSocket and the compression context.
     const promise = Promise.all([
         hijackWebSocket(),
-        hijackInflate(chunks => {
-            chunks.map(chunk => {
-                Hijacker.onPacket(Packer.unpack(chunk));
-            });
-        })
+        hijackInflate()
     ]);
 
-    return promise.then(([ws, stop]) => {
-        console.log("HIJACKED.");
+    // When hijacked return the connection.
+    return promise.then(([ws, context]) => {
+        let packer = newPacker();
+        let original = context.onEnd;
 
-        // Set object properties.
-        Object.assign(Packer, newPacker());
-        Packer.ws = ws;
-        Packer.stop = stop;
+        return {
+            ws,
 
-        return Packer;
+            send(data) {
+                ws.send(packer.pack(data));
+            },
+
+            receive(callback) {
+                // Save original context.
+                original = context.onEnd;
+
+                context.onEnd = function () {
+                    this.chunks.map(chunk => {
+                        callback(packer.unpack(chunk));
+                    });
+
+                    return original.apply(this, arguments);
+                };
+            },
+
+            stop() {
+                context.onEnd = original;
+            }
+        };
     });
 }
