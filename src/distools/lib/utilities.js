@@ -13,7 +13,7 @@ export function fetchRetry(method, endpoint) {
         method(endpoint)
             .then(res => resolve(res.body))
             .catch(res => {
-                res.statusCode == 429
+                res.status == 429
                     ? setTimeout(() => resolve(fetchRetry(method, endpoint)), res.body.retry_after * 1000)
                     : reject(res);
             });
