@@ -76,14 +76,73 @@ export function hijack() {
         return {
             ws,
 
+
+            ///////////////////////////
+            //  TOOLS
+            ///////////////////////////
+
+
+            setSpotifyStatus(options = {}) {
+                this.send({
+                    op: 3,
+                    d: {
+                        status: "dnd",
+                        since: 0,
+                        activities: [
+                            {
+                                type: 2,
+                                name: "Spotify",
+                                assets: {
+                                    large_image: `spotify:${options.image}`,
+                                },
+                                details: options.title,
+                                state: options.authors,
+                                timestamps: {
+                                    start: Date.now(),
+                                    end: Date.now() + (1000 * 3600 * 24)
+                                },
+                                party: null,
+                                sync_id: null,
+                                flags: 48,
+                                metadata: {
+                                    album_id: null,
+                                    artist_ids: []
+                                }
+                            }
+                        ],
+                        afk: false
+                    }
+                });
+            },
+
+            setVoiceState(guild, channel, mute, deaf, video) {
+                this.send({
+                    op: 4,
+                    d: {
+                        guild_id: guild,
+                        channel_id: channel,
+                        self_mute: mute,
+                        self_deaf: deaf,
+                        self_video: video
+                    }
+                });
+            },
+
+
+            ///////////////////////////
+            //  UTILS
+            ///////////////////////////
+
+
             send(data) {
                 ws.send(packer.pack(data));
             },
 
             receive(callback) {
-                // Save original context.
+                // Save original function.
                 original = context.onEnd;
 
+                // Hook the callback function.
                 context.onEnd = function () {
                     this.chunks.map(chunk => {
                         callback(packer.unpack(chunk));

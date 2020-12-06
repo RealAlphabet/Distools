@@ -161,7 +161,7 @@ export const Distools = {
 
 
     async fetchAllMessages(channelId = Distools.selectedChannelId) {
-        let messages = Distools.messages.reverse();
+        let messages = [];
         let result = [];
 
         do {
