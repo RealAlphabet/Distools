@@ -37,7 +37,7 @@
 ### Permanent Installation
 
 1. Exit Discord.
-2. Go to `%appdata%\discord\0.0.307\modules\discord_desktop_core`.
+2. Go to `%appdata%\discord\0.0.308\modules\discord_desktop_core`.
 3. Replace `index.js` with [this file](https://raw.githubusercontent.com/OnceDot/Distools/master/dist/injector.js).
 4. Restart Discord.
 
