@@ -13,6 +13,7 @@ import {
     SelectedGuildId,
     SelectedChannelId,
     UsersManager,
+    PresencesManager
 } from '@/lib/utilities';
 
 
@@ -29,10 +30,6 @@ export const Distools = {
 
     fetchRelationships(id) {
         return fetchRetry(DiscordAPI.get, DiscordConstants.Endpoints.USER_RELATIONSHIPS(id));
-    },
-
-    fetchAllMembers() {
-        console.log(DiscordConstants.Endpoints);
     },
 
     async searchSharedFriends(who) {
@@ -58,6 +55,16 @@ export const Distools = {
                 return relationships.find(({ id })  => id === who);
             });
         });
+    },
+
+    getUserActivities(id) {
+        let status = PresencesManager.clientStatuses[id];
+
+        return status && {
+            id,
+            activities: PresencesManager.activities[id],
+            status
+        };
     },
 
 
