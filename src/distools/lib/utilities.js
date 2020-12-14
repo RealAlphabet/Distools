@@ -14,7 +14,7 @@ export function fetchRetry(method, endpoint) {
             .then(res => resolve(res.body))
             .catch(res => {
                 res.status == 429
-                    ? setTimeout(() => resolve(fetchRetry(method, endpoint)), res.body.retry_after * 1000)
+                    ? setTimeout(() => fetchRetry(method, endpoint).then(resolve), res.body.retry_after * 1000)
                     : reject(res);
             });
     });

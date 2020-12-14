@@ -179,7 +179,7 @@ export const Distools = {
         do {
             result.push(...messages);
 
-            messages = (await DiscordAPI.get({
+            messages = await fetchRetry(DiscordAPI.get, {
                 url: DiscordConstants.Endpoints.MESSAGES(channelId),
                 query: {
                     before: messages.length
@@ -187,7 +187,7 @@ export const Distools = {
                         : null,
                     limit: 100
                 }
-            })).body;
+            });
         }
         while (messages.length > 0);
         return result.reverse();
