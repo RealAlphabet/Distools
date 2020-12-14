@@ -94,6 +94,7 @@ export function hijack() {
                                 name: "Spotify",
                                 assets: {
                                     large_image: `spotify:${options.image}`,
+                                    large_text: options.title
                                 },
                                 details: options.title,
                                 state: options.authors,
@@ -101,7 +102,9 @@ export function hijack() {
                                     start: Date.now(),
                                     end: Date.now() + (1000 * 3600 * 24)
                                 },
-                                party: null,
+                                party: {
+                                    id: "spotify:"
+                                },
                                 sync_id: null,
                                 flags: 48,
                                 metadata: {

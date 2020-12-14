@@ -20,7 +20,12 @@ import {
 export const Distools = {
 
 
-    hijack,
+    hijack() {
+        hijack().then(trampoline => {
+            window.Trampoline = trampoline;
+            console.log(`HIJACKED.`);
+        });
+    },
 
 
     ///////////////////////////////////////////////////////////
@@ -177,7 +182,9 @@ export const Distools = {
             messages = (await DiscordAPI.get({
                 url: DiscordConstants.Endpoints.MESSAGES(channelId),
                 query: {
-                    before: messages[messages.length - 1].id,
+                    before: messages.length
+                        ? messages[messages.length - 1].id
+                        : null,
                     limit: 100
                 }
             })).body;
