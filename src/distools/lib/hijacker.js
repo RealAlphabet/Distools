@@ -70,8 +70,8 @@ export function hijack() {
 
     // When hijacked return the connection.
     return promise.then(([ws, context]) => {
-        let packer = newPacker();
-        let original = context.onEnd;
+        let packer      = newPacker();
+        let original    = context.onEnd;
 
         return {
             ws,
@@ -86,49 +86,65 @@ export function hijack() {
                 this.send({
                     op: 3,
                     d: {
-                        status: "dnd",
-                        since: 0,
+                        status  : "dnd",
+                        since   : 0,
                         activities: [
                             {
-                                type: 2,
-                                name: "Spotify",
+                                type    : 2,
+                                name    : "Spotify",
                                 assets: {
-                                    large_image: `spotify:${options.image}`,
-                                    large_text: options.title
+                                    large_image : `spotify:${options.image}`,
+                                    large_text  : options.title
                                 },
-                                details: options.title,
-                                state: options.authors,
+                                details : options.title,
+                                state   : options.authors,
                                 timestamps: {
-                                    start: Date.now(),
-                                    end: Date.now() + (1000 * 3600 * 24)
+                                    start       : Date.now(),
+                                    end         : Date.now() + (1000 * 3600 * 24)
                                 },
                                 party: {
                                     id: "spotify:"
                                 },
-                                sync_id: null,
-                                flags: 48,
+                                sync_id : null,
+                                flags   : 48,
                                 metadata: {
-                                    album_id: null,
-                                    artist_ids: []
+                                    album_id    : null,
+                                    artist_ids  : []
                                 }
                             }
                         ],
-                        afk: false
+                        afk     : false
                     }
                 });
             },
 
-            setVoiceState(guild, channel, mute, deaf, video) {
+            setVoiceState(options = {}) {
                 this.send({
                     op: 4,
                     d: {
-                        guild_id: guild,
-                        channel_id: channel,
-                        self_mute: mute,
-                        self_deaf: deaf,
-                        self_video: video
+                        guild_id    : options.guild     ?? DISTOOLS.selectedGuildId,
+                        channel_id  : options.channel   ?? DISTOOLS.selectedChannelId,
+                        self_mute   : mute              ?? false,
+                        self_deaf   : deaf              ?? false,
+                        self_video  : video             ?? false
                     }
                 });
+            },
+
+            fetchGuildMembers() {
+                for (let i = 0; i < 5000; i += 100) {
+                    this.send({
+                        op: 14,
+                        d: {
+                            guild_id: DISTOOLS.selectedGuildId,
+                            channels: {
+                                [DISTOOLS.selectedChannelId]: [
+                                    [0, 99], [i, (i - 1)]
+                                ]
+                            }
+                        }
+                    });
+                }
             },
 
 

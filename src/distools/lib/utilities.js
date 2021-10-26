@@ -71,21 +71,16 @@ export const WebpackModules = {
     },
 
     getModules() {
-        let id = "webpackmodules";
-
         if (this._require)
             return this._require;
 
-        this._require = typeof (window.webpackJsonp) == "function"
-            ? window.webpackJsonp([], {
-                [id]: (_, exports, __webpack_require__) => exports.default = __webpack_require__
-            }, [id]).default
+        window.webpackChunkdiscord_app.push([
+            ["webpackmodules"],
+            {},
+            req => (this._require = req.c)
+        ]);
 
-            : window.webpackJsonp.push([[], {
-                [id]: (module, _, __webpack_require__) => module.exports = __webpack_require__
-            }, [[id]]]).c
-
-        delete this._require[id];
+        delete this._require["webpackmodules"];
         return this._require;
     }
 };
@@ -96,23 +91,23 @@ export const WebpackModules = {
 ////////////////////////////////////////////
 
 
-export const Inflate = WebpackModules.getByProps("Inflate").Inflate;
-export const ErlpackClass = WebpackModules.getByProps("getErlpackEncoding").getErlpackEncoding();
+export const Inflate                = WebpackModules.getByProps("Inflate").Inflate;
+export const ErlpackClass           = WebpackModules.getByProps("getErlpackEncoding").getErlpackEncoding();
 
-export const React = WebpackModules.getByProps("createElement", "cloneElement");
-export const ReactDOM = WebpackModules.getByProps("render", "findDOMNode");
+export const React                  = WebpackModules.getByProps("createElement", "cloneElement");
+export const ReactDOM               = WebpackModules.getByProps("render", "findDOMNode");
 
-export const DiscordAPI = WebpackModules.getByProps("getAPIBaseURL");
-export const DiscordConstants = WebpackModules.getByProps("Permissions", "ActivityTypes", "StatusTypes");
-export const DiscordLogin = WebpackModules.getByProps("getToken");
-export const DiscordUser = WebpackModules.getByProps("getCurrentUser");
+export const DiscordAPI             = WebpackModules.getByProps("getAPIBaseURL");
+export const DiscordConstants       = WebpackModules.getByProps("Permissions", "ActivityTypes", "StatusTypes");
+export const DiscordLogin           = WebpackModules.getByProps("getToken");
+export const DiscordUser            = WebpackModules.getByProps("getCurrentUser");
 export const DiscordReceiveMessages = WebpackModules.getByProps("receiveMessage", "sendBotMessage");
 
-export const DiscordMembers = WebpackModules.getByProps("getMember");
-export const DiscordChannel = WebpackModules.getByProps("getChannel");
-export const DiscordChannels = WebpackModules.getByProps("getChannels");
-export const DiscordMessages = WebpackModules.getByProps("getMessages");
-export const SelectedGuildId = WebpackModules.getByProps("getLastSelectedGuildId");
-export const SelectedChannelId = WebpackModules.getByProps("getLastSelectedChannelId");
-export const UsersManager = WebpackModules.getByProps("getUsers");
-export const PresencesManager = WebpackModules.getByProps('getActivities').getState();
+export const DiscordMembers         = WebpackModules.getByProps("getMember");
+export const DiscordChannel         = WebpackModules.getByProps("getChannel");
+export const DiscordChannels        = WebpackModules.getByProps("getChannels");
+export const DiscordMessages        = WebpackModules.getByProps("getMessages");
+export const SelectedGuildId        = WebpackModules.getByProps("getLastSelectedGuildId");
+export const SelectedChannelId      = WebpackModules.getByProps("getLastSelectedChannelId");
+export const UsersManager           = WebpackModules.getByProps("getUsers");
+export const PresencesManager       = WebpackModules.getByProps("getActivityMetadata").getState();

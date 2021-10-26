@@ -48,10 +48,11 @@ export const Distools = {
 
             else {
                 promises.push(Distools.fetchRelationships(user.id).then(relationships => {
-                    return (user.relationships = relationships), user;
+                    user.relationships = relationships;
+                    return user;
                 }));
 
-                await sleep(25);
+                await sleep(20);
             }
 
         // Find relationships of the user.
