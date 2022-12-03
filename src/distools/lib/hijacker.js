@@ -1,4 +1,4 @@
-import { Inflate, ErlpackClass } from '@/lib/utilities';
+import { Inflate } from '@/lib/utilities';
 
 
 ////////////////////////////////////////////
@@ -7,15 +7,10 @@ import { Inflate, ErlpackClass } from '@/lib/utilities';
 
 
 function newPacker() {
-    if (ErlpackClass) {
-        return new ErlpackClass;
-
-    } else {
-        return {
-            pack: JSON.stringify,
-            unpack: data => data
-        };
-    }
+    return {
+        pack    : JSON.stringify,
+        unpack  : data => data
+    };
 }
 
 // @TODO : Simplify with a new "hook" function.

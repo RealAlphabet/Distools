@@ -1,3 +1,5 @@
+import WebpackModules from '@/lib/webpack.js';
+
 
 ////////////////////////////////////////////
 //  UTILS
@@ -34,65 +36,11 @@ export function downloadTextFile(fileName, fileContents) {
 
 
 ////////////////////////////////////////////
-//  WEBPACK
-////////////////////////////////////////////
-
-
-export const WebpackModules = {
-
-    getByProps(...props) {
-        return this.getModule(module => {
-            return props.every(property => module[property]);
-        });
-    },
-
-    getByValue(prop, value) {
-        return this.getModule(module => {
-            return module[prop] == value;
-        }, true);
-    },
-
-    getModule(filter, module = false) {
-        let modules = this.getModules();
-
-        for (let index in modules) {
-            let { exports } = modules[index];
-
-            if (exports) {
-                if (exports.__esModule && exports.default && filter(exports.default))
-                    return (module)
-                        ? exports
-                        : exports.default;
-
-                if (filter(exports))
-                    return exports;
-            }
-        }
-    },
-
-    getModules() {
-        if (this._require)
-            return this._require;
-
-        window.webpackChunkdiscord_app.push([
-            ["webpackmodules"],
-            {},
-            req => (this._require = req.c)
-        ]);
-
-        delete this._require["webpackmodules"];
-        return this._require;
-    }
-};
-
-
-////////////////////////////////////////////
 //  MODULES
 ////////////////////////////////////////////
 
 
 export const Inflate                = WebpackModules.getByProps("Inflate").Inflate;
-export const ErlpackClass           = WebpackModules.getByProps("getErlpackEncoding").getErlpackEncoding();
 
 export const React                  = WebpackModules.getByProps("createElement", "cloneElement");
 export const ReactDOM               = WebpackModules.getByProps("render", "findDOMNode");
