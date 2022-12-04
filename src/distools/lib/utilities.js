@@ -46,7 +46,7 @@ export const React                  = WebpackModules.getByProps("createElement",
 export const ReactDOM               = WebpackModules.getByProps("render", "findDOMNode");
 
 export const DiscordAPI             = WebpackModules.getByProps("getAPIBaseURL");
-export const DiscordConstants       = WebpackModules.getByProps("Permissions", "ActivityTypes", "StatusTypes");
+// export const DiscordConstants       = WebpackModules.getByProps("Permissions", "ActivityTypes", "StatusTypes");
 export const DiscordLogin           = WebpackModules.getByProps("getToken");
 export const DiscordUser            = WebpackModules.getByProps("getCurrentUser");
 export const DiscordReceiveMessages = WebpackModules.getByProps("receiveMessage", "sendBotMessage");
@@ -59,3 +59,14 @@ export const SelectedGuildId        = WebpackModules.getByProps("getLastSelected
 export const SelectedChannelId      = WebpackModules.getByProps("getLastSelectedChannelId");
 export const UsersManager           = WebpackModules.getByProps("getUsers");
 export const PresencesManager       = WebpackModules.getByProps("getActivityMetadata").getState();
+
+export const DiscordConstants       = (() => {
+    for (let key of Object.keys(WebpackModules.getAllModules()[461061].exports)) {
+        let obj = WebpackModules.getAllModules()[461061].exports[key];
+
+        if (obj?.SEARCH_GUILD)
+            return {
+                Endpoints: obj,
+            };
+    }
+})();
