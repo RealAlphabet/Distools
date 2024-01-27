@@ -10,14 +10,14 @@
 /**
  * Filters for use with {@link module:WebpackModules} but may prove useful elsewhere.
  */
- class Filters {
+export class Filters {
     /**
      * Generates a {@link module:WebpackModules.Filters~filter} that filters by a set of properties.
      * @param {Array<string>} props - Array of property names
      * @param {module:WebpackModules.Filters~filter} filter - Additional filter
      * @returns {module:WebpackModules.Filters~filter} - A filter that checks for a set of properties
      */
-    static byProps(props, filter = m => m) {
+    static byKeys(props, filter = m => m) {
         return module => {
             if (!module) return false;
             if (typeof(module) !== "object" && typeof(module) !== "function") return false;
@@ -36,7 +36,7 @@
      * @param {module:WebpackModules.Filters~filter} filter - Additional filter
      * @returns {module:WebpackModules.Filters~filter} - A filter that checks for a set of properties on the object's prototype
      */
-    static byPrototypeFields(fields, filter = m => m) {
+    static byPrototypeKeys(fields, filter = m => m) {
         return module => {
             if (!module) return false;
             if (typeof(module) !== "object" && typeof(module) !== "function") return false;
@@ -89,12 +89,22 @@
     /**
      * Generates a {@link module:WebpackModules.Filters~filter} that filters by a set of properties.
      * @param {string} name - Name the module should have
-     * @param {module:WebpackModules.Filters~filter} filter - Additional filter
      * @returns {module:WebpackModules.Filters~filter} - A filter that checks for a set of properties
      */
     static byDisplayName(name) {
         return module => {
             return module && module.displayName === name;
+        };
+    }
+
+    /**
+     * Generates a {@link module:WebpackModules.Filters~filter} that filters by a set of properties.
+     * @param {string} name - Name the store should have (usually includes the word Store)
+     * @returns {module:WebpackModules.Filters~filter} - A filter that checks for a set of properties
+     */
+    static byStoreName(name) {
+        return module => {
+            return module?._dispatchToken && module?.getName?.() === name;
         };
     }
 
@@ -128,12 +138,31 @@ const wrapFilter = filter => (exports, module, moduleId) => {
     }
 };
 
-class WebpackModules {
+export default class WebpackModules {
 
     static find(filter, first = true) {return this.getModule(filter, {first});}
     static findAll(filter) {return this.getModule(filter, {first: false});}
     static findByUniqueProperties(props, first = true) {return first ? this.getByProps(...props) : this.getAllByProps(...props);}
     static findByDisplayName(name) {return this.getByDisplayName(name);}
+
+    /**
+     * A Proxy that returns the module source by ID.
+     */
+    static modules = new Proxy({}, {
+        ownKeys() {return Object.keys(WebpackModules.require.m);},
+        getOwnPropertyDescriptor() {
+            return {
+                enumerable: true,
+                configurable: true, // Not actually
+            };
+        },
+        get(_, k) {
+            return WebpackModules.require.m[k];
+        },
+        set() {
+            throw new Error("[WebpackModules~modules] Setting modules is not allowed.");
+        }
+    });
 
     /**
      * Finds a module using a filter function.
@@ -154,14 +183,19 @@ class WebpackModules {
         for (let i = 0; i < indices.length; i++) {
             const index = indices[i];
             if (!modules.hasOwnProperty(index)) continue;
-            const module = modules[index];
-            const {exports} = module;
-            if (!exports || exports === window || exports === document.documentElement) continue;
             
-            if (typeof(exports) === "object" && searchExports) {
+            let module = null;
+            try {module = modules[index];} catch {continue;}
+
+            const {exports} = module;
+            if (!exports || exports === window || exports === document.documentElement || exports[Symbol.toStringTag] === "DOMTokenList") continue;
+            
+            if (typeof(exports) === "object" && searchExports && !exports.TypedArray) {
                 for (const key in exports) {
                     let foundModule = null;
-                    const wrappedExport = exports[key];
+                    let wrappedExport = null;
+                    try {wrappedExport = exports[key];} catch {continue;}
+
                     if (!wrappedExport) continue;
                     if (wrappedFilter(wrappedExport, module, index)) foundModule = wrappedExport;
                     if (!foundModule) continue;
@@ -205,7 +239,7 @@ class WebpackModules {
             if (!modules.hasOwnProperty(index)) continue;
             const module = modules[index];
             const {exports} = module;
-            if (!exports || exports === window || exports === document.documentElement) continue;
+            if (!exports || exports === window || exports === document.documentElement || exports[Symbol.toStringTag] === "DOMTokenList") continue;
 
             for (let q = 0; q < queries.length; q++) {
                 const query = queries[q];
@@ -215,7 +249,7 @@ class WebpackModules {
 
                 const wrappedFilter = wrapFilter(filter);
 
-                if (typeof(exports) === "object" && searchExports) {
+                if (typeof(exports) === "object" && searchExports && !exports.TypedArray) {
                     for (const key in exports) {
                         let foundModule = null;
                         const wrappedExport = exports[key];
@@ -240,6 +274,24 @@ class WebpackModules {
         }
         
         return returnedModules;
+    }
+
+    /**
+     * Searches for a module by value, returns module & matched key. Useful in combination with the Patcher. 
+     * @param {(value: any, index: number, array: any[]) => boolean} filter A function to use to filter the module
+     * @param {object} [options] Set of options to customize the search
+     * @param {any} [options.target=null] Optional module target to look inside.
+     * @param {Boolean} [options.defaultExport=true] Whether to return default export when matching the default export
+     * @param {Boolean} [options.searchExports=false] Whether to execute the filter on webpack export getters. 
+     * @return {[Any, string]}
+     */
+    static *getWithKey(filter, {target = null, ...rest} = {}) {
+        yield target ??= this.getModule(exports =>
+            Object.values(exports).some(filter),
+            rest
+        );
+        
+        yield target && Object.keys(target).find(k => filter(target[k]));
     }
 
     /**
@@ -273,7 +325,7 @@ class WebpackModules {
      * @return {Any}
      */
     static getByPrototypes(...prototypes) {
-        return this.getModule(Filters.byPrototypeFields(prototypes));
+        return this.getModule(Filters.byPrototypeKeys(prototypes));
     }
 
     /**
@@ -282,7 +334,7 @@ class WebpackModules {
      * @return {Any}
      */
     static getAllByPrototypes(...prototypes) {
-        return this.getModule(Filters.byPrototypeFields(prototypes), {first: false});
+        return this.getModule(Filters.byPrototypeKeys(prototypes), {first: false});
     }
 
     /**
@@ -291,7 +343,7 @@ class WebpackModules {
      * @return {Any}
      */
     static getByProps(...props) {
-        return this.getModule(Filters.byProps(props));
+        return this.getModule(Filters.byKeys(props));
     }
 
     /**
@@ -300,7 +352,7 @@ class WebpackModules {
      * @return {Any}
      */
     static getAllByProps(...props) {
-        return this.getModule(Filters.byProps(props), {first: false});
+        return this.getModule(Filters.byKeys(props), {first: false});
     }
 
     /**
@@ -340,10 +392,10 @@ class WebpackModules {
         return new Promise((resolve) => {
             const cancel = () => this.removeListener(listener);
             const listener = function(exports) {
-                if (!exports || exports === window || exports === document.documentElement) return;
+                if (!exports || exports === window || exports === document.documentElement || exports[Symbol.toStringTag] === "DOMTokenList") return;
 
                 let foundModule = null;
-                if (typeof(exports) === "object" && searchExports) {
+                if (typeof(exports) === "object" && searchExports && !exports.TypedArray) {
                     for (const key in exports) {
                         foundModule = null;
                         const wrappedExport = exports[key];
@@ -410,7 +462,7 @@ class WebpackModules {
     static initialize() {
         this.handlePush = this.handlePush.bind(this);
         this.listeners = new Set();
-
+        
         this.__ORIGINAL_PUSH__ = window[this.chunkName].push;
         Object.defineProperty(window[this.chunkName], "push", {
             configurable: true,
@@ -425,7 +477,7 @@ class WebpackModules {
                 });
             }
         });
-    }
+    }    
 
     /**
      * Adds a listener for when discord loaded a chunk. Useful for subscribing to lazy loaded modules.
@@ -477,5 +529,3 @@ class WebpackModules {
 }
 
 WebpackModules.initialize();
-
-export default WebpackModules;
