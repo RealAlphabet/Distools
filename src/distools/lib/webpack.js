@@ -1,4 +1,4 @@
-// Source: https://github.com/BetterDiscord/BetterDiscord/blob/1165043908e2b64fad84eaee58241f9443c96c5a/renderer/src/modules/webpackmodules.js
+// Source: https://github.com/BetterDiscord/BetterDiscord/blob/main/renderer/src/modules/webpackmodules.js
 
 /**
  * Checks if a given module matches a set of parameters.
